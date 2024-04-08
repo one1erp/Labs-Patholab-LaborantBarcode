@@ -1,0 +1,73 @@
+﻿<UserControl x:Class="LaborantBarcodingStaion.LaborantBarcoding"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300" GotFocus="UserControl_GotFocus" Initialized="UserControl_Initialized" Loaded="UserControl_Loaded">
+    <Grid FocusManager.FocusedElement="{Binding ElementName=ScanInput}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="3*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="HeaderLabel" FontSize="15" FontWeight="Bold" Margin="8" TextAlignment="Center" Grid.Row="0"  Text="עמדת לבורנטים: הדפסה"/>
+        <Grid x:Name="InputArea"  Grid.Row="1" FlowDirection="RightToLeft">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="InputLable" Grid.Column="0" FontWeight="Bold" Margin="8" TextAlignment="Right"  Text="ברקוד" />
+
+            <TextBox x:Name="ScanInput" Grid.Column="1" KeyDown="ScanInput_KeyDown" TextAlignment="Left" FlowDirection="LeftToRight" GotFocus="ScanInput_GotFocus" TabIndex="0" ForceCursor="True" TextChanged="ScanInput_TextChanged"/>
+        </Grid>
+        <TextBlock x:Name="InfoTextBlock" Grid.Row="2" FontSize="30"  FontWeight="Bold" FlowDirection="RightToLeft"/>
+        <DataGrid x:Name="GridScanHistory"  ItemsSource="{Binding GridRows, Mode=TwoWay}"
+            AutoGenerateColumns="False"
+    		Background="LightGray" RowBackground="LightYellow"
+    	    Grid.Row="3"
+            FlowDirection="RightToLeft"
+            HorizontalScrollBarVisibility="Auto"
+            VerticalScrollBarVisibility="Auto" 
+            ScrollViewer.CanContentScroll="True" 
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Center" 
+            CanUserAddRows="false"
+            CanUserDeleteRows="False"
+            SelectionMode="Single">
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell" >
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Grid Background="{Binding Path=color}">
+                                    <ContentPresenter VerticalAlignment="Center"   HorizontalAlignment="Center"/>
+                                    <DataGridCellsPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.CellStyle>
+            <!--DataGrid.RowStyle>
+            <Style TargetType="DataGridRow">
+                    <Setter Property="Background" Binding="{Binding Path=Color}"  />
+            </Style>
+            </DataGrid.RowStyle-->
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Path=RowNum}" Header="#" IsReadOnly="True"  Width="Auto"/>
+                <DataGridTextColumn Binding="{Binding Path=Time}" Header="תאריך/שעה" IsReadOnly="True"  Width="Auto" />
+                <DataGridTextColumn Binding="{Binding Path=Message}" Header="הודעה" IsReadOnly="True"  Width="*" />
+                <DataGridTextColumn Binding="{Binding Path=EntityName}" Header="הברקוד שנקלט" IsReadOnly="True" Width="Auto"/>
+                <DataGridTextColumn Binding="{Binding Path=OperatorName}" Header="שם הלבורנט/ית" IsReadOnly="True"  Width="Auto" />
+                
+                </DataGrid.Columns>
+        </DataGrid>
+        <TextBox HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <TextBlock x:Name="txtInProcess" TextWrapping="Wrap" Text="המערכת מעדכנת נתונים" FontSize="20" TextAlignment="Center" Margin="84,48,82,62" UseLayoutRounding="False" Grid.Row="3" Foreground="Black" Visibility="Hidden"/>
+    </Grid>
+</UserControl>
