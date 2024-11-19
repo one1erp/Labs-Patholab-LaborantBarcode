@@ -45,8 +45,7 @@ namespace LaborantBarcodingStaion
         Timer _timerFocus = null;
         Timer timer1 = null;
         public int timerInterval = 300000;
-
-
+        private bool printAgain = false;
 
         public LaborantBarcoding(LSSERVICEPROVIDERLib.INautilusServiceProvider sp, LSSERVICEPROVIDERLib.INautilusProcessXML xmlProcessor, LSSERVICEPROVIDERLib.INautilusDBConnection _ntlsCon, LSExtensionWindowLib.IExtensionWindowSite2 _ntlsSite, LSSERVICEPROVIDERLib.INautilusUser _ntlsUser, int timerInterval)
         {
@@ -106,20 +105,19 @@ namespace LaborantBarcodingStaion
 
             }
         }
-        //private void FirstFocus()
-        //{
-        //    //First focus because nautius's bag
-        //    _timerFocus = new Timer { Interval = 1000 };
-        //    _timerFocus.Tick += timerFocus_Tick;
-        //    ScanInput.Focus();
-        //}
+        private string GetEventName(string phraseHeaderName, bool printAgain)
+        {
+            switch (phraseHeaderName)
+            {
+                case "Laborant Position - laser print":
+                    return "Laser slide print";
+                case "Laborant Position - regular print":
+                    return printAgain ? "Print Slide" : "Print Slide Once";
+                default:
+                    return string.Empty; 
+            }
+        }
 
-        //void timerFocus_Tick(object sender, EventArgs e)
-        //{
-        //    ScanInput.Focus();
-        //    _timerFocus.Stop();
-
-        //  }
         public void Enque(object data)
         {
             inProcess = true;
@@ -132,7 +130,6 @@ namespace LaborantBarcodingStaion
             {
                 Log("שגיאה בהדפסה, במידה והתקלה חוזרת יש לדווח למנהל הטכנולוגי", false);
                 Logger.WriteLogFile(ex);
-
             }
             finally
             {
@@ -166,9 +163,11 @@ namespace LaborantBarcodingStaion
             //check that the station is defined in the phrase
             string stationCode = entityNameAndStation.Substring(entityNameAndStation.Length - 2);
 
+
+            ////////////////////
             PHRASE_ENTRY station =
              dal.FindBy<PHRASE_ENTRY>(
-                 pe => pe.PHRASE_HEADER.NAME == "Laborant Position" && pe.PHRASE_NAME == stationCode)
+                 pe => (pe.PHRASE_HEADER.NAME == "Laborant Position - laser print" || pe.PHRASE_HEADER.NAME == "Laborant Position - regular print") && pe.PHRASE_NAME == stationCode)
                 .FirstOrDefault();
 
 
@@ -195,20 +194,24 @@ namespace LaborantBarcodingStaion
 
             string entityName = entityNameAndStation.Substring(0, entityNameAndStation.Length - 2);
 
+            eventName = GetEventName(station.PHRASE_HEADER.NAME, printAgain);
+
             if (entityName == "#(1-)#")
             {
                 #region PrintAgain
-                //print last printed slides again
-                eventName = "Print Slide";
+
+                printAgain = true;
+                //Added 30.10.24 new laser printers
+                eventName = GetEventName(station.PHRASE_HEADER.NAME, printAgain);
+                printAgain = false;
+
                 Log("נקלט קוד הדפסה חוזרת", true, null, "", laborantWorkUser.OPERATOR);
 
 
                 U_ALL_BARCODE_SCAN_USER barcodeScanUser =
                     dal.FindBy<U_ALL_BARCODE_SCAN_USER>(bsu => bsu.U_LABORANT_POSITION == stationCode
                         && laborantWorkUser.U_LABORANT == bsu.U_LABORANT
-                        && bsu.U_CREATED_ON > DateTime.Today)
-
-                       .OrderByDescending(bsu => bsu.U_CREATED_ON).FirstOrDefault();
+                        && bsu.U_CREATED_ON > DateTime.Today).OrderByDescending(bsu => bsu.U_CREATED_ON).FirstOrDefault();
                 if (barcodeScanUser == null)
                 {
                     Log(" לא נמצאו הדפסות קודמות מהיום לעמדה " + stationCode + " ולמשתמש", true, null, "", laborantWorkUser.OPERATOR);
@@ -233,14 +236,7 @@ namespace LaborantBarcodingStaion
                 return;
             }
 
-
             {
-
-                //check if barcode fits the specs
-
-
-                //find the slides 
-
                 ALIQUOT[] slides = null;
                 long? sdgId = null;
                 //find slides if it is a sample of Pap or Cyto
@@ -332,16 +328,21 @@ namespace LaborantBarcodingStaion
                 {
                     if (slide.STATUS != "X")
                     {
+                        if(slide.ALIQUOT_USER.U_PRINTED_ON != null)
+                        {
+                            Log("הסלייד " + slide.NAME + " הודפס בעבר ולא יודפס שנית", false, sdgId, entityName,
+                            laborantWorkUser.OPERATOR);
+                            break;
+                        }
                         //fire "print Slide" Event
                         FireEventXmlHandler fireEvent = new FireEventXmlHandler(sp);
                         fireEvent.CreateFireEventXml("ALIQUOT", slide.ALIQUOT_ID, eventName);
                         var feres = fireEvent.ProcssXml();
                         if (!feres)
                         {
-
                             Logger.WriteLogFile("U_PRINTED_ON: " + slide.ALIQUOT_USER.U_PRINTED_ON + " eventName: " + eventName);
 
-                            if (slide.ALIQUOT_USER.U_PRINTED_ON == null && eventName == "Print Slide")
+                            if (slide.ALIQUOT_USER.U_PRINTED_ON == null && (eventName == "Print Slide" || eventName == "Laser slide print"))
                             {
                                 Log("שגיאה בהדפסת הסלייד " + slide.NAME, false, sdgId, entityName,
                                     laborantWorkUser.OPERATOR);
