@@ -28,7 +28,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -42,7 +42,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
- <OutputPath>..\..\DLLS\</OutputPath>
+    <OutputPath>..\..\DLLS\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -62,15 +62,16 @@
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Thermo\Nautilus\Interop.LSSERVICEPROVIDERLib.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Patholab.XmlService">
-      <HintPath>..\..\Patholab_XmlService\bin\Debug\Patholab.XmlService.dll</HintPath>
-    </Reference>
     <Reference Include="Patholab_Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Patholab_Common\bin\Debug\Patholab_Common.dll</HintPath>
+      <HintPath>..\..\DLLS\Patholab_Common.dll</HintPath>
     </Reference>
     <Reference Include="Patholab_DAL_V1">
       <HintPath>..\..\Patholab_DAL_V1\Patholab_DAL_V1\bin\Debug\Patholab_DAL_V1.dll</HintPath>
+    </Reference>
+    <Reference Include="Patholab_XmlService, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\DLLS\Patholab_XmlService.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
